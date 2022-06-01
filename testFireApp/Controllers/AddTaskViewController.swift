@@ -12,11 +12,16 @@ enum Question {
     case name, place, price, more
 }
 
+protocol AddTaskInUser {
+    func addCreatedTask(taskId: String)
+}
+
 class AddTaskViewController: UIViewController {
 
     private var question: Question = .name
-    private var task: Task = Task()
+    private var task: MTask = MTask()
     private var ref: DatabaseReference!
+    var tasksList: AddTaskInUser?
     
     @IBOutlet weak var questionLabel: UILabel!
     @IBOutlet weak var answerTextField: UITextField!
@@ -93,7 +98,10 @@ class AddTaskViewController: UIViewController {
             setQuestion()
         case .more:
             task.more = answerTextField.text ?? ""
-            ref.child("tasks").childByAutoId().setValue(task.convertToDictionary())
+            let newTaskRef = ref.child("tasks").childByAutoId()
+            tasksList?.addCreatedTask(taskId: newTaskRef.key ?? "хуй тебе")
+            //(tabBarController as! BarViewController).user?.createdTasks.append(newTaskRef.key ?? "Хуй там")
+            newTaskRef.setValue(task.convertToDictionary())
             self.dismiss(animated: true, completion: nil)
         }
     }

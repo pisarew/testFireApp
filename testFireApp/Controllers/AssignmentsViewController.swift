@@ -9,26 +9,31 @@ import UIKit
 import Firebase
 
 
-class AssignmentsViewController: UICollectionViewController {
+class AssignmentsViewController: UICollectionViewController, AddTaskInUser {
+    
+    
 
-    let itemsPerRow: CGFloat = 2
-    let size = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    private let itemsPerRow: CGFloat = 2
+    private let size = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
     
     override func viewDidLoad() {
         super.viewDidLoad()
-    }
-    @IBAction func logoutAction(_ sender: UIBarButtonItem) {
-        let fireAuth = Auth.auth()
-        do {
-            try fireAuth.signOut()
-        }
-        catch let error as NSError {
-            print("Ошибка - ", error)
-        }
-        self.navigationController?.popViewController(animated: true)
-        
+        activityIndicator.startAnimating()
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
+   
+    
+    func addCreatedTask(taskId: String) {
+        print(taskId)
+
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let addVC = segue.destination as! AddTaskViewController
+        addVC.tasksList = self
+    }
 
     // MARK: UICollectionViewDataSource
 
@@ -38,9 +43,11 @@ class AssignmentsViewController: UICollectionViewController {
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
-        cell.backgroundColor = .gray
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! AssignmentCell
         cell.layer.cornerRadius = 15
+        cell.titleLabel.text = "tasks[indexPath.row].title"
+        cell.priceLabel.text = "27₽"
+        cell.placeLabel.text = "tasks[indexPath.row].place"
         return cell
     }
 

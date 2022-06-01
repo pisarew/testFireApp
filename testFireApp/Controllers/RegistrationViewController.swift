@@ -7,14 +7,15 @@
 
 import UIKit
 import Firebase
+//import FirebaseDatabase
 
 class RegistrationViewController: UIViewController, UITextFieldDelegate {
 
     @IBOutlet weak var usernameTextField: UITextField!
+    @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var confirmTextField: UITextField!
     @IBOutlet var scrollView: UIScrollView!
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +34,8 @@ class RegistrationViewController: UIViewController, UITextFieldDelegate {
         
         switch textField {
         case usernameTextField:
+            emailTextField.becomeFirstResponder()
+        case emailTextField:
             passwordTextField.becomeFirstResponder()
         case passwordTextField:
             confirmTextField.becomeFirstResponder()
@@ -55,20 +58,17 @@ class RegistrationViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func registrationAction(_ sender: Any) {
-        guard let username = usernameTextField.text, let password = passwordTextField.text, let confirm = confirmTextField.text, username != "" else { return }
+        guard let email = emailTextField.text, let password = passwordTextField.text, let confirm = confirmTextField.text, email != "" else { return }
         if password != confirm {
             return
         }
-        Auth.auth().createUser(withEmail: username, password: password) {[weak self] user, error in
-            if error == nil {
-                if user != nil {
-//                    let alert = UIAlertController(title: "My Alert", message: "This is an alert.", preferredStyle: .alert)
-//                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Default action"), style: .default, handler: { _ in
-//                    NSLog("The \"OK\" alert occured.")
-//                    }))
-//                    self?.present(alert, animated: true, completion: nil)
-                    self?.dismiss(animated: true)
-                }
+        
+        AuthService.shared.register(email: email, password: password) { result in
+            switch result {
+            case .success(_):
+                self.dismiss(animated: true)
+            case .failure(let error):
+                print(error)
             }
         }
         

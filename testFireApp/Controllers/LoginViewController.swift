@@ -10,22 +10,23 @@ import Firebase
 
 class LoginViewController: UIViewController, UITextFieldDelegate {
 
+    
+    private var handle: AuthStateDidChangeListenerHandle?
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet weak var errorLabel: UILabel!
     
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
-    
     @IBOutlet weak var loginButton: UIButton!
+    
+    private var uid = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        Auth.auth().addStateDidChangeListener({[weak self] auth, user in
-            if user != nil {
-                self?.performSegue(withIdentifier: "assignmentsSegue", sender: nil)
-            }
-        })
+        
+        
+        errorLabel.isHidden = true
         
         self.usernameTextField.delegate = self
         self.passwordTextField.delegate = self
@@ -34,6 +35,20 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(kbDidShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(kbDidHide), name: UIResponder.keyboardWillHideNotification, object: nil)
         loginButton.layer.cornerRadius = 10
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        handle = Auth.auth().addStateDidChangeListener({[weak self] auth, user in
+            if user != nil {
+                self?.uid = user?.uid ?? ""
+                self?.performSegue(withIdentifier: "assignmentsSegue", sender: nil)
+            }
+        })
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        Auth.auth().removeStateDidChangeListener(handle!)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -61,18 +76,17 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func loginAction(_ sender: Any) {
         guard let username = usernameTextField.text, let password = passwordTextField.text, username != "", password != "" else { return }
-        Auth.auth().signIn(withEmail: username, password: password) { _, error in
-            if error != nil {
-                //сообщение об ошибке
+        AuthService.shared.register(email: usernameTextField.text, password: passwordTextField.text) { result in
+            switch result {
+            case .success(_):
                 return
+            case .failure(let error):
+                print(error)
             }
-            
         }
         
     }
     
-    @IBAction func registerAction(_ sender: Any) {
-    }
     
 }
 
